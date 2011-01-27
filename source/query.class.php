@@ -93,10 +93,12 @@ class query{
 	 * @param mixed $column The column being compared
 	 * @param mixed $where The value being compared to
 	 * @param string $comparison The comparison being done
-	 * @param string $comparison_type Whether it is an and or an OR
+	 * @param string $comparison_type Whether it is an AND or an OR
 	 * @param boolean $escape whether or not this value will be escaped
 	 */
 	private function push_where($column, $where, $comparison, $comparison_type, $escape){
+		$comparison = strtoupper($comparison);
+		$comparison_type = strtoupper($comparison_type);
 		$column = $this->filter_column($column);
 		$where = $this->filter_column($where);
 		$this->wheres[] = array(

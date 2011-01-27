@@ -175,7 +175,10 @@ class queryTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($expected, $this->q->wheres);
 	}
 	public function testAndWhereOrWhere(){
-		$this->q->where('1', '1')->and_where(true, true)->or_where('2', '2');
+		$this->q->where('1', '1')
+				->and_where(true, true)
+				->and_where(null, null, 'iS')
+				->or_where('2', '2', '=', false);
 		$expected =  array(
 			array(
 				'column'=>'1',
@@ -192,11 +195,18 @@ class queryTest extends PHPUnit_Framework_TestCase {
 				'escape'=>true,
 			),
 			array(
+				'column'=>'NULL',
+				'where'=>'NULL',
+				'comparison'=>'IS',
+				'type'=>'AND',
+				'escape'=>true,
+			),
+			array(
 				'column'=>'2',
 				'where'=>'2',
 				'comparison'=>'=',
 				'type'=>'OR',
-				'escape'=>true,
+				'escape'=>false,
 			)
 		);
 		$this->assertEquals($expected, $this->q->wheres);
