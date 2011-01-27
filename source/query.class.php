@@ -2,6 +2,7 @@
 /**
  * @property-read array $tables The tables that are part of the query
  * @property-read array $columns The columns that are part of the query
+ * @property-read array $wheres The where conditions that are part of the query
  */
 class query{
 	/**
@@ -14,6 +15,11 @@ class query{
 	 * @var array
 	 */
 	protected $columns = array();
+	/**
+	 * The where conditions that are part of the query
+	 * @var array
+	 */
+	protected $wheres = array();
 	public function __construct(){
 		
 	}
@@ -61,5 +67,68 @@ class query{
 			$column = 'FALSE';
 		}
 		return $column;
+	}
+	/**
+	 * Clear the where stack
+	 */
+	private function clear_wheres(){
+		$this->wheres = array();
+	}
+	/**
+	 * Add a where to the conditions, clears out the where stack
+	 * @param mixed $column The column being compared
+	 * @param mixed $where The value being compared to
+	 * @param string $comparison The comparison being done
+	 * @param string $comparison_type Whether it is an and or an OR
+	 * @param boolean $escape whether or not this value will be escaped
+	 * @return query
+	 */
+	public function where($column, $where, $comparison='=', $escape=true){
+		$this->clear_wheres();
+		$this->push_where($column, $where, $comparison, null, $escape);
+		return $this;
+	}
+	/**
+	 * Push another value onto the where stack
+	 * @param mixed $column The column being compared
+	 * @param mixed $where The value being compared to
+	 * @param string $comparison The comparison being done
+	 * @param string $comparison_type Whether it is an and or an OR
+	 * @param boolean $escape whether or not this value will be escaped
+	 */
+	private function push_where($column, $where, $comparison, $comparison_type, $escape){
+		$column = $this->filter_column($column);
+		$where = $this->filter_column($where);
+		$this->wheres[] = array(
+			'column'=>$column,
+			'where'=>$where,
+			'comparison'=>$comparison,
+			'type'=>$comparison_type,
+			'escape'=>$escape,
+		);
+	}
+	/**
+	 * Add an 'AND' to the conditions
+	 * @param mixed $column The column being compared
+	 * @param mixed $where The value being compared to
+	 * @param string $comparison The comparison being done
+	 * @param boolean $escape whether or not this value will be escaped
+	 * @return query
+	 */
+	public function and_where($column, $where, $comparison='=', $escape= true){
+		$this->push_where($column, $where, $comparison, 'AND', $escape);
+		return $this;
+	}
+	/**
+	 * Add an 'AND' to the conditions
+	 * @param mixed $column The column being compared
+	 * @param mixed $where The value being compared to
+	 * @param string $comparison The comparison being done
+	 * @param boolean $escape whether or not this value will be escaped
+	 * @return query
+	 */
+	public function or_where($column, $where, $comparison='=', $escape= true){
+		$this->push_where($column, $where, $comparison, 'OR', $escape);
+		return $this;
 	}
 }

@@ -112,5 +112,93 @@ class queryTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($expected_tables, $this->q->tables);
 		$this->assertEquals($expected_columns, $this->q->columns);
 	}
-	
+	public function testFirstWhere(){
+		$this->q->where('1', '1');
+		$expected = array(
+			'column'=>'1',
+			'where'=>'1',
+			'comparison'=>'=',
+			'type'=>null,
+			'escape'=>true,
+		);
+		$this->assertEquals($expected, $this->q->wheres[0]);
+	}
+	public function testClearWhere(){
+		$this->q->where('1', '1')->where('2', '2');
+		$expected = array(
+			'column'=>'2',
+			'where'=>'2',
+			'comparison'=>'=',
+			'type'=>null,
+			'escape'=>true,
+		);
+		$this->assertEquals($expected, $this->q->wheres[0]);
+	}
+	public function testAndWhere(){
+		$this->q->where('1', '1')->and_where('2', '2');
+		$expected =  array(
+			array(
+				'column'=>'1',
+				'where'=>'1',
+				'comparison'=>'=',
+				'type'=>null,
+				'escape'=>true,
+			),
+			array(
+				'column'=>'2',
+				'where'=>'2',
+				'comparison'=>'=',
+				'type'=>'AND',
+				'escape'=>true,
+			)
+		);
+		$this->assertEquals($expected, $this->q->wheres);
+	}
+	public function testOrWhere(){
+		$this->q->where('1', '1')->or_where('2', '2');
+		$expected =  array(
+			array(
+				'column'=>'1',
+				'where'=>'1',
+				'comparison'=>'=',
+				'type'=>null,
+				'escape'=>true,
+			),
+			array(
+				'column'=>'2',
+				'where'=>'2',
+				'comparison'=>'=',
+				'type'=>'OR',
+				'escape'=>true,
+			)
+		);
+		$this->assertEquals($expected, $this->q->wheres);
+	}
+	public function testAndWhereOrWhere(){
+		$this->q->where('1', '1')->and_where(true, true)->or_where('2', '2');
+		$expected =  array(
+			array(
+				'column'=>'1',
+				'where'=>'1',
+				'comparison'=>'=',
+				'type'=>null,
+				'escape'=>true,
+			),
+			array(
+				'column'=>'TRUE',
+				'where'=>'TRUE',
+				'comparison'=>'=',
+				'type'=>'AND',
+				'escape'=>true,
+			),
+			array(
+				'column'=>'2',
+				'where'=>'2',
+				'comparison'=>'=',
+				'type'=>'OR',
+				'escape'=>true,
+			)
+		);
+		$this->assertEquals($expected, $this->q->wheres);
+	}
 }
