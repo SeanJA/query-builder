@@ -30,44 +30,43 @@ class queryTest extends PHPUnit_Framework_TestCase {
 	protected function tearDown() {
 		$this->q = null;
 	}
+	/**
+	 * Test adding a single table to the query
+	 */
 	public function testAddTable(){
 		$this->q->table('test');
-		$this->assertEquals(array('table'=>'test', 'alias'=>'test'), $this->q->tables[0]);
+		$this->assertEquals(array('table'=>'test', 'alias'=>null), $this->q->tables[0]);
 	}
-	public function testAddMultipleTables(){
-		$this->q->table('test');
-		$this->q->table('test_2');
-		$expected = array(
-			array(
-				'table'=>'test',
-				'alias'=>'test'
-			),
-			array(
-				'table'=>'test_2',
-				'alias'=>'test_2'
-			)
-		);
-		$this->assertEquals($expected, $this->q->tables);
-	}
-	public function testAddMultipleTablesChained(){
+	/**
+	 * Test chaining of functions
+	 */
+	public function testTableChaining(){
 		$this->q->table('test')
 				->table('test_2')
 				->table('test_3');
 		$expected = array(
 			array(
 				'table'=>'test',
-				'alias'=>'test'
+				'alias'=>null
 			),
 			array(
 				'table'=>'test_2',
-				'alias'=>'test_2'
+				'alias'=>null
 			),
 			array(
 				'table'=>'test_3',
-				'alias'=>'test_3'
+				'alias'=>null
 			)
 		);
 		$this->assertEquals($expected, $this->q->tables);
+	}
+	public function testAddColumn(){
+		$this->q->column('test');
+		$expected = array(
+			'column'=>'test',
+			'alias'=>null
+		);
+		$this->assertEquals($expected, $this->q->columns[0]);
 	}
 }
 
