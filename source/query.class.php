@@ -35,15 +35,31 @@ class query{
 	}
 	/**
 	 * Add a column to the query
-	 * @param string $column the column being added
+	 * @param mixed $column the column being added
 	 * @param string $alias the alias of this table
 	 * @return query
 	 */
 	public function column($column, $alias=null){
+		$column = $this->filter_column($column);
 		$this->columns[] = array(
 			'column'=>$column,
 			'alias'=>$alias
 		);
 		return $this;
+	}
+	/**
+	 * Handle some special column value cases
+	 * @param mixed $column
+	 * @return string
+	 */
+	private function filter_column($column){
+		if($column === null){
+			$column = 'NULL';
+		}elseif($column === true){
+			$column = 'TRUE';
+		}elseif($column === false){
+			$column = 'FALSE';
+		}
+		return $column;
 	}
 }

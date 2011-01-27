@@ -45,6 +45,46 @@ class queryTest extends PHPUnit_Framework_TestCase {
 		);
 		$this->assertEquals($expected, $this->q->columns[0]);
 	}
+	public function testNULLColumn(){
+		$this->q->column(null);
+		$expected = array(
+			'column'=>'NULL',
+			'alias'=>null
+		);
+		$this->assertEquals($expected, $this->q->columns[0]);
+	}
+	public function testFALSEColumn(){
+		$this->q->column(false);
+		$expected = array(
+			'column'=>'FALSE',
+			'alias'=>null
+		);
+		$this->assertEquals($expected, $this->q->columns[0]);
+	}
+	public function testTRUEColumn(){
+		$this->q->column(true);
+		$expected = array(
+			'column'=>'TRUE',
+			'alias'=>null
+		);
+		$this->assertEquals($expected, $this->q->columns[0]);
+	}
+	public function testMathColumn(){
+		$this->q->column('1 = 1');
+		$expected = array(
+			'column'=>'1 = 1',
+			'alias'=>null
+		);
+		$this->assertEquals($expected, $this->q->columns[0]);
+	}
+	public function testFunctionColumn(){
+		$this->q->column('COUNT(*)');
+		$expected = array(
+			'column'=>'COUNT(*)',
+			'alias'=>null
+		);
+		$this->assertEquals($expected, $this->q->columns[0]);
+	}
 	/**
 	 * Test chaining of functions
 	 */
@@ -73,7 +113,4 @@ class queryTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($expected_columns, $this->q->columns);
 	}
 	
-	
 }
-
-?>
