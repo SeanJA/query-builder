@@ -316,4 +316,17 @@ class queryTest extends PHPUnit_Framework_TestCase {
 		$expected = "SELECT * FROM table WHERE ( col_1 = '1' OR col_2 = '2' ) OR col_3 != '3'";
 		$this->assertEquals($expected,$this->q->build_select());
 	}
+
+	public function testMultiWhereGrouping(){
+		$this->q->table('table')
+				->begin_and()
+				->begin_and()
+				->and_where('col_1', 1)
+				->or_where('col_2', 2)
+				->end_and()
+				->end_and()
+				->or_where('col_3', 3, '!=');
+		$expected = "SELECT * FROM table WHERE ( ( col_1 = '1' OR col_2 = '2' ) ) OR col_3 != '3'";
+		$this->assertEquals($expected,$this->q->build_select());
+	}
 }
