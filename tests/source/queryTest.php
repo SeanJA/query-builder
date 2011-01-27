@@ -13,14 +13,14 @@ class queryTest extends PHPUnit_Framework_TestCase {
 	/**
 	 * @var query
 	 */
-	protected $object;
+	protected $q;
 
 	/**
 	 * Sets up the fixture, for example, opens a network connection.
 	 * This method is called before a test is executed.
 	 */
 	protected function setUp() {
-		$this->object = new query;
+		$this->q = new query;
 	}
 
 	/**
@@ -28,9 +28,47 @@ class queryTest extends PHPUnit_Framework_TestCase {
 	 * This method is called after a test is executed.
 	 */
 	protected function tearDown() {
-		
+		$this->q = null;
 	}
-
+	public function testAddTable(){
+		$this->q->table('test');
+		$this->assertEquals(array('table'=>'test', 'alias'=>'test'), $this->q->tables[0]);
+	}
+	public function testAddMultipleTables(){
+		$this->q->table('test');
+		$this->q->table('test_2');
+		$expected = array(
+			array(
+				'table'=>'test',
+				'alias'=>'test'
+			),
+			array(
+				'table'=>'test_2',
+				'alias'=>'test_2'
+			)
+		);
+		$this->assertEquals($expected, $this->q->tables);
+	}
+	public function testAddMultipleTablesChained(){
+		$this->q->table('test')
+				->table('test_2')
+				->table('test_3');
+		$expected = array(
+			array(
+				'table'=>'test',
+				'alias'=>'test'
+			),
+			array(
+				'table'=>'test_2',
+				'alias'=>'test_2'
+			),
+			array(
+				'table'=>'test_3',
+				'alias'=>'test_3'
+			)
+		);
+		$this->assertEquals($expected, $this->q->tables);
+	}
 }
 
 ?>
