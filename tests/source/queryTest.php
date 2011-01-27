@@ -218,7 +218,7 @@ class queryTest extends PHPUnit_Framework_TestCase {
 				->begin_or()
 				->and_where(null, null, 'iS')
 				->end_or()
-				->end_or()
+				->end_and()
 				->or_where('2', '2', '=', false);
 		$expected =  array(
 			array(
