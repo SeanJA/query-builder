@@ -116,7 +116,7 @@ class queryTest extends PHPUnit_Framework_TestCase {
 		$this->q->where('1', '1');
 		$expected = array(
 			'column'=>'1',
-			'where'=>'1',
+			'value'=>'1',
 			'comparison'=>'=',
 			'type'=>null,
 			'escape'=>true,
@@ -127,7 +127,7 @@ class queryTest extends PHPUnit_Framework_TestCase {
 		$this->q->where('1', '1')->where('2', '2');
 		$expected = array(
 			'column'=>'2',
-			'where'=>'2',
+			'value'=>'2',
 			'comparison'=>'=',
 			'type'=>null,
 			'escape'=>true,
@@ -139,14 +139,14 @@ class queryTest extends PHPUnit_Framework_TestCase {
 		$expected =  array(
 			array(
 				'column'=>'1',
-				'where'=>'1',
+				'value'=>'1',
 				'comparison'=>'=',
 				'type'=>null,
 				'escape'=>true,
 			),
 			array(
 				'column'=>'2',
-				'where'=>'2',
+				'value'=>'2',
 				'comparison'=>'=',
 				'type'=>'AND',
 				'escape'=>true,
@@ -159,14 +159,14 @@ class queryTest extends PHPUnit_Framework_TestCase {
 		$expected =  array(
 			array(
 				'column'=>'1',
-				'where'=>'1',
+				'value'=>'1',
 				'comparison'=>'=',
 				'type'=>null,
 				'escape'=>true,
 			),
 			array(
 				'column'=>'2',
-				'where'=>'2',
+				'value'=>'2',
 				'comparison'=>'=',
 				'type'=>'OR',
 				'escape'=>true,
@@ -182,28 +182,28 @@ class queryTest extends PHPUnit_Framework_TestCase {
 		$expected =  array(
 			array(
 				'column'=>'1',
-				'where'=>'1',
+				'value'=>'1',
 				'comparison'=>'=',
 				'type'=>null,
 				'escape'=>true,
 			),
 			array(
 				'column'=>'TRUE',
-				'where'=>'TRUE',
+				'value'=>'TRUE',
 				'comparison'=>'=',
 				'type'=>'AND',
-				'escape'=>true,
+				'escape'=>false,
 			),
 			array(
 				'column'=>'NULL',
-				'where'=>'NULL',
+				'value'=>'NULL',
 				'comparison'=>'IS',
 				'type'=>'AND',
-				'escape'=>true,
+				'escape'=>false,
 			),
 			array(
 				'column'=>'2',
-				'where'=>'2',
+				'value'=>'2',
 				'comparison'=>'=',
 				'type'=>'OR',
 				'escape'=>false,
@@ -223,32 +223,32 @@ class queryTest extends PHPUnit_Framework_TestCase {
 		$expected =  array(
 			array(
 				'column'=>'1',
-				'where'=>'1',
+				'value'=>'1',
 				'comparison'=>'=',
 				'type'=>null,
 				'escape'=>true,
 			),
 			array(
 				'bracket'=>'OPEN',
-				'grouping'=>'AND'
+				'type'=>'AND'
 			),
 			array(
 				'column'=>'TRUE',
-				'where'=>'TRUE',
+				'value'=>'TRUE',
 				'comparison'=>'=',
 				'type'=>'AND',
-				'escape'=>true,
+				'escape'=>false,
 			),
 			array(
 				'bracket'=>'OPEN',
-				'grouping'=>'OR'
+				'type'=>'OR'
 			),
 			array(
 				'column'=>'NULL',
-				'where'=>'NULL',
+				'value'=>'NULL',
 				'comparison'=>'IS',
 				'type'=>'AND',
-				'escape'=>true,
+				'escape'=>false,
 			),
 			array(
 				'bracket'=>'CLOSE',
@@ -258,12 +258,62 @@ class queryTest extends PHPUnit_Framework_TestCase {
 			),
 			array(
 				'column'=>'2',
-				'where'=>'2',
+				'value'=>'2',
 				'comparison'=>'=',
 				'type'=>'OR',
 				'escape'=>false,
 			)
 		);
 		$this->assertEquals($expected, $this->q->wheres);
+	}
+	public function testBuildSelect(){
+		$this->q->column('column')
+				->column('column')
+				->table('table')
+				->where(true, true);
+		$expected = 'SELECT column, column FROM table WHERE TRUE = TRUE';
+		$this->assertEquals($expected,$this->q->build_select());
+	}
+	public function testBuildSelectWithTableAlias(){
+		$this->q->column('column', 'col')
+				->column('column', 'pink')
+				->table('table', 'Table')
+				->where(true, 1);
+		$expected = "SELECT column AS col, column AS pink FROM table AS Table WHERE TRUE = '1'";
+		$this->assertEquals($expected,$this->q->build_select());
+	}
+	public function testSelectStar(){
+		$this->q->table('table', 'Table')
+				->where(true, 'true');
+		$expected = "SELECT * FROM table AS Table WHERE TRUE = 'true'";
+		$this->assertEquals($expected,$this->q->build_select());
+	}
+	public function testWhereGroup(){
+		$this->q->table('table', 'Table')
+				->begin_and()
+				->and_where(true, 'true')
+				->end_and();
+		$expected = "SELECT * FROM table AS Table WHERE ( TRUE = 'true' )";
+		$this->assertEquals($expected,$this->q->build_select());
+	}
+	public function testMultiWhereGroup(){
+		$this->q->table('table', 'Table')
+				->begin_and()
+				->and_where(true, 'true')
+				->or_where('2', false)
+				->end_and();
+		$expected = "SELECT * FROM table AS Table WHERE ( TRUE = 'true' OR 2 = FALSE )";
+		$this->assertEquals($expected,$this->q->build_select());
+	}
+
+	public function testMultiWhere(){
+		$this->q->table('table')
+				->begin_and()
+				->and_where('col_1', 1)
+				->or_where('col_2', 2)
+				->end_and()
+				->or_where('col_3', 3, '!=');
+		$expected = "SELECT * FROM table WHERE ( col_1 = '1' OR col_2 = '2' ) OR col_3 != '3'";
+		$this->assertEquals($expected,$this->q->build_select());
 	}
 }
