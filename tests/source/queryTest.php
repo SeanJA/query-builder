@@ -37,29 +37,6 @@ class queryTest extends PHPUnit_Framework_TestCase {
 		$this->q->table('test');
 		$this->assertEquals(array('table'=>'test', 'alias'=>null), $this->q->tables[0]);
 	}
-	/**
-	 * Test chaining of functions
-	 */
-	public function testTableChaining(){
-		$this->q->table('test')
-				->table('test_2')
-				->table('test_3');
-		$expected = array(
-			array(
-				'table'=>'test',
-				'alias'=>null
-			),
-			array(
-				'table'=>'test_2',
-				'alias'=>null
-			),
-			array(
-				'table'=>'test_3',
-				'alias'=>null
-			)
-		);
-		$this->assertEquals($expected, $this->q->tables);
-	}
 	public function testAddColumn(){
 		$this->q->column('test');
 		$expected = array(
@@ -68,6 +45,35 @@ class queryTest extends PHPUnit_Framework_TestCase {
 		);
 		$this->assertEquals($expected, $this->q->columns[0]);
 	}
+	/**
+	 * Test chaining of functions
+	 */
+	public function testChaining(){
+		$this->q->table('test')
+				->column('test_2', 'test')
+				->table('test_3', 'test_2');
+		
+		$expected_tables = array(
+			array(
+				'table'=>'test',
+				'alias'=>null
+			),
+			array(
+				'table'=>'test_3',
+				'alias'=>'test_2'
+			)
+		);
+		$expected_columns = array(
+			array(
+				'column'=>'test_2',
+				'alias'=>'test'
+			)
+		);
+		$this->assertEquals($expected_tables, $this->q->tables);
+		$this->assertEquals($expected_columns, $this->q->columns);
+	}
+	
+	
 }
 
 ?>
