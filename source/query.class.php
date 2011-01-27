@@ -133,4 +133,51 @@ class query{
 		$this->push_where($column, $where, $comparison, 'OR', $escape);
 		return $this;
 	}
+	/**
+	 * Push an open bracket into the where stack to group OR conditions
+	 * @return query
+	 */
+	public function begin_or(){
+		$this->wheres[] = array(
+			'bracket'=>'OPEN',
+			'grouping'=>'OR'
+		);
+		return $this;
+	}
+	/**
+	 * Push an open bracket into the where stack to group AND conditions
+	 * @return query
+	 */
+	public function begin_and(){
+		$this->wheres[] = array(
+			'bracket'=>'OPEN',
+			'grouping'=>'AND'
+		);
+		return $this;
+	}
+	/**
+	 * End an OR condition group
+	 * @return query
+	 */
+	public function end_or(){
+		$this->closed_bracket();
+		return $this;
+	}
+	/**
+	 * End an AND condition group
+	 * @return query
+	 */
+	public function end_and(){
+		$this->closed_bracket();
+		return $this;
+	}
+	/**
+	 * Push a closing bracket into the where stack to end the grouping of conditions
+	 * @return query
+	 */
+	private function closed_bracket(){
+		$this->wheres[] = array(
+			'bracket'=>'CLOSE',
+		);
+	}
 }

@@ -211,4 +211,59 @@ class queryTest extends PHPUnit_Framework_TestCase {
 		);
 		$this->assertEquals($expected, $this->q->wheres);
 	}
+	public function testBrackets(){
+		$this->q->where('1', '1')
+				->begin_and()
+				->and_where(true, true)
+				->begin_or()
+				->and_where(null, null, 'iS')
+				->end_or()
+				->end_or()
+				->or_where('2', '2', '=', false);
+		$expected =  array(
+			array(
+				'column'=>'1',
+				'where'=>'1',
+				'comparison'=>'=',
+				'type'=>null,
+				'escape'=>true,
+			),
+			array(
+				'bracket'=>'OPEN',
+				'grouping'=>'AND'
+			),
+			array(
+				'column'=>'TRUE',
+				'where'=>'TRUE',
+				'comparison'=>'=',
+				'type'=>'AND',
+				'escape'=>true,
+			),
+			array(
+				'bracket'=>'OPEN',
+				'grouping'=>'OR'
+			),
+			array(
+				'column'=>'NULL',
+				'where'=>'NULL',
+				'comparison'=>'IS',
+				'type'=>'AND',
+				'escape'=>true,
+			),
+			array(
+				'bracket'=>'CLOSE',
+			),
+			array(
+				'bracket'=>'CLOSE',
+			),
+			array(
+				'column'=>'2',
+				'where'=>'2',
+				'comparison'=>'=',
+				'type'=>'OR',
+				'escape'=>false,
+			)
+		);
+		$this->assertEquals($expected, $this->q->wheres);
+	}
 }
