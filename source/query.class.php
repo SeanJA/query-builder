@@ -209,7 +209,8 @@ class query{
 	public function build_select(){
 		$select = 'SELECT '. $this->build_column_string()
 				.' FROM ' . $this->build_table_string()
-				.' ' . $this->build_where_string();
+				. $this->build_join_string()
+				. $this->build_where_string();
 		return $select;
 	}
 	/**
@@ -328,7 +329,7 @@ class query{
 		$bracket = false;
 		foreach($this->wheres as $w){
 			if($first){
-				$string = 'WHERE ';
+				$string = ' WHERE ';
 				$first = false;
 			} else {
 				if(!$bracket && !isset($w['bracket'])){
@@ -352,6 +353,17 @@ class query{
 					$string .= $w['value'];
 				}
 			}
+		}
+		return $string;
+	}
+	/**
+	 * Build the JOIN string part of the query
+	 * @return string
+	 */
+	private function build_join_string(){
+		$string = '';
+		foreach($this->joins as $j){
+			$string .= ' ' . $j['type'] . ' ' . $j['table'] . ' ON (' . $j['conditions'] . ')';
 		}
 		return $string;
 	}
