@@ -329,4 +329,91 @@ class queryTest extends PHPUnit_Framework_TestCase {
 		$expected = "SELECT * FROM table WHERE ( ( col_1 = '1' OR col_2 = '2' ) ) OR col_3 != '3'";
 		$this->assertEquals($expected,$this->q->build_select());
 	}
+
+	public function testJoin(){
+		$this->q->table('table')
+				->join('table_2', 'table.id = table_2.id');
+		$expected = array(
+			'table'=>'table_2',
+			'conditions'=>'table.id = table_2.id',
+			'type'=>'JOIN',
+		);
+		$this->assertEquals($expected, $this->q->joins[0]);
+	}
+
+	public function testRightJoin(){
+		$this->q->table('table')
+				->right_join('table_2', 'table.id = table_2.id');
+		$expected = array(
+			'table'=>'table_2',
+			'conditions'=>'table.id = table_2.id',
+			'type'=>'RIGHT JOIN',
+		);
+		$this->assertEquals($expected, $this->q->joins[0]);
+	}
+
+	public function testLeftJoin(){
+		$this->q->table('table')
+				->left_join('table_2', 'table.id = table_2.id');
+		$expected = array(
+			'table'=>'table_2',
+			'conditions'=>'table.id = table_2.id',
+			'type'=>'LEFT JOIN',
+		);
+		$this->assertEquals($expected, $this->q->joins[0]);
+	}
+
+	public function testStraifghtJoin(){
+		$this->q->table('table')
+				->straight_join('table_2', 'table.id = table_2.id');
+		$expected = array(
+			'table'=>'table_2',
+			'conditions'=>'table.id = table_2.id',
+			'type'=>'STRAIGHT JOIN',
+		);
+		$this->assertEquals($expected, $this->q->joins[0]);
+	}
+
+	public function testInnerJoin(){
+		$this->q->table('table')
+				->inner_join('table_2', 'table.id = table_2.id');
+		$expected = array(
+			'table'=>'table_2',
+			'conditions'=>'table.id = table_2.id',
+			'type'=>'INNER JOIN',
+		);
+		$this->assertEquals($expected, $this->q->joins[0]);
+	}
+
+	public function testCrossJoin(){
+		$this->q->table('table')
+				->cross_join('table_2', 'table.id = table_2.id');
+		$expected = array(
+			'table'=>'table_2',
+			'conditions'=>'table.id = table_2.id',
+			'type'=>'CROSS JOIN',
+		);
+		$this->assertEquals($expected, $this->q->joins[0]);
+	}
+
+	public function testMultipleJoins(){
+		$this->q->table('table')
+				->join('join_table', 'id')
+				->right_join('right_table', 'id')
+				->left_join('left_table', 'id')
+				->inner_join('inner_table', 'id')
+				->straight_join('straight_table', 'id')
+				->cross_join('cross_table', 'id');
+
+		//make sure there are 6 joins
+		$this->assertEquals(6, count($this->q->joins));
+
+		//make sure they are in the right order
+		$this->assertEquals('JOIN', $this->q->joins[0]['type']);
+		$this->assertEquals('RIGHT JOIN', $this->q->joins[1]['type']);
+		$this->assertEquals('LEFT JOIN', $this->q->joins[2]['type']);
+		$this->assertEquals('INNER JOIN', $this->q->joins[3]['type']);
+		$this->assertEquals('STRAIGHT JOIN', $this->q->joins[4]['type']);
+		$this->assertEquals('CROSS JOIN', $this->q->joins[5]['type']);
+	}
 }
