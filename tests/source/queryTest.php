@@ -396,7 +396,7 @@ class queryTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($expected, $this->q->joins[0]);
 	}
 
-	public function testMultipleJoins(){
+	public function testMultipleJoinOrder(){
 		$this->q->table('table')
 				->join('join_table', 'id')
 				->right_join('right_table', 'id')
@@ -415,5 +415,22 @@ class queryTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('INNER JOIN', $this->q->joins[3]['type']);
 		$this->assertEquals('STRAIGHT JOIN', $this->q->joins[4]['type']);
 		$this->assertEquals('CROSS JOIN', $this->q->joins[5]['type']);
+	}
+
+	public function testJoinQuery(){
+		$this->q->table('table')
+				->join('join_table', 'id');
+		$expected = 'SELECT * FROM table JOIN join_table ON (id)';
+		$this->assertEquals($expected, $this->q->build_select());
+	}
+
+	public function testTwoJoinQuery(){
+		$this->q->table('table')
+				->column('table.column')
+				->join('join_table', 'id')
+				->right_join('right_table', 'id2')
+				->where('column', '1', '!=');
+		$expected = "SELECT table.column FROM table JOIN join_table ON (id) RIGHT JOIN right_table ON (id2) WHERE column != '1'";
+		$this->assertEquals($expected, $this->q->build_select());
 	}
 }
