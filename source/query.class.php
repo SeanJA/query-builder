@@ -4,6 +4,7 @@ require_once 'db.mock.php';
  * @property-read array $tables The tables that are part of the query
  * @property-read array $columns The columns that are part of the query
  * @property-read array $wheres The where conditions that are part of the query
+ * @property-read array $joins The join conditions that are part of the query
  */
 class query{
 	const QUOTE = "'";
@@ -22,6 +23,11 @@ class query{
 	 * @var array
 	 */
 	protected $wheres = array();
+	/**
+	 * The joins that are being used in this query
+	 * @var array
+	 */
+	protected $joins = array();
 	/**
 	 *
 	 * @var database_class
@@ -61,27 +67,6 @@ class query{
 		return $this;
 	}
 	/**
-	 * Handle some special column value cases
-	 * @param mixed $column
-	 * @return string
-	 */
-	private function filter_column($column){
-		if($column === null){
-			$column = 'NULL';
-		}elseif($column === true){
-			$column = 'TRUE';
-		}elseif($column === false){
-			$column = 'FALSE';
-		}
-		return $column;
-	}
-	/**
-	 * Clear the where stack
-	 */
-	private function clear_wheres(){
-		$this->wheres = array();
-	}
-	/**
 	 * Add a where to the conditions, clears out the where stack
 	 * @param mixed $column The column being compared
 	 * @param mixed $where The value being compared to
@@ -94,32 +79,6 @@ class query{
 		$this->clear_wheres();
 		$this->push_where($column, $where, $comparison, null, $escape);
 		return $this;
-	}
-	/**
-	 * Push another value onto the where stack
-	 * @param mixed $column The column being compared
-	 * @param mixed $value The value being compared to
-	 * @param string $comparison The comparison being done
-	 * @param string $comparison_type Whether it is an AND or an OR
-	 * @param boolean $escape whether or not this value will be escaped
-	 */
-	private function push_where($column, $value, $comparison, $comparison_type, $escape){
-		$comparison = strtoupper($comparison);
-		$comparison_type = strtoupper($comparison_type);
-		$old_column = $column;
-		$column = $this->filter_column($column);
-		$old_value = $value;
-		$value = $this->filter_column($value);
-		if($old_value !== $value){
-			$escape = false;
-		}
-		$this->wheres[] = array(
-			'column'=>$column,
-			'value'=>$value,
-			'comparison'=>$comparison,
-			'type'=>$comparison_type,
-			'escape'=>$escape,
-		);
 	}
 	/**
 	 * Add an 'AND' to the conditions
@@ -143,6 +102,66 @@ class query{
 	 */
 	public function or_where($column, $value, $comparison='=', $escape= true){
 		$this->push_where($column, $value, $comparison, 'OR', $escape);
+		return $this;
+	}
+	/**
+	 * Add a join to the query
+	 * @param string $table
+	 * @param string $conditions
+	 * return query
+	 */
+	public function join($table, $conditions){
+		$this->push_join($table, $conditions, 'JOIN');
+		return $this;
+	}
+	/**
+	 * Add a right join to the query
+	 * @param string $table
+	 * @param string $conditions
+	 * return query
+	 */
+	public function right_join($table, $conditions){
+		$this->push_join($table, $conditions, 'RIGHT JOIN');
+		return $this;
+	}
+	/**
+	 * Add a left join to the query
+	 * @param string $table
+	 * @param string $conditions
+	 * return query
+	 */
+	public function left_join($table, $conditions){
+		$this->push_join($table, $conditions, 'LEFT JOIN');
+		return $this;
+	}
+	/**
+	 * Add a straight join to the query
+	 * @param string $table
+	 * @param string $conditions
+	 * return query
+	 */
+	public function straight_join($table, $conditions){
+		$this->push_join($table, $conditions, 'STRAIGHT JOIN');
+		return $this;
+	}
+	/**
+	 * Add an inner join to the query
+	 * @param string $table
+	 * @param string $conditions
+	 * return query
+	 */
+	public function inner_join($table, $conditions){
+		$this->push_join($table, $conditions, 'INNER JOIN');
+		return $this;
+	}
+	/**
+	 * Add a cross join to the query
+	 * @param string $table
+	 * @param string $conditions
+	 * return query
+	 */
+	public function cross_join($table, $conditions){
+		$this->push_join($table, $conditions, 'CROSS JOIN');
 		return $this;
 	}
 	/**
@@ -184,15 +203,6 @@ class query{
 		return $this;
 	}
 	/**
-	 * Push a closing bracket into the where stack to end the grouping of conditions
-	 * @return query
-	 */
-	private function closed_bracket(){
-		$this->wheres[] = array(
-			'bracket'=>'CLOSE',
-		);
-	}
-	/**
 	 * Build a select string from the current query
 	 * @return string
 	 */
@@ -201,6 +211,66 @@ class query{
 				.' FROM ' . $this->build_table_string()
 				.' ' . $this->build_where_string();
 		return $select;
+	}
+	/**
+	 * Push a join onto the join stack
+	 * @param string $table
+	 * @param string $conditions
+	 * @param string $type
+	 */
+	private function push_join($table, $conditions, $type){
+		$this->joins[] = array(
+			'table'=>$table,
+			'conditions'=>$conditions,
+			'type'=>$type,
+		);
+	}
+	/**
+	 * Handle some special column value cases
+	 * @param mixed $column
+	 * @return string
+	 */
+	private function filter_column($column){
+		if($column === null){
+			$column = 'NULL';
+		}elseif($column === true){
+			$column = 'TRUE';
+		}elseif($column === false){
+			$column = 'FALSE';
+		}
+		return $column;
+	}
+	/**
+	 * Push another value onto the where stack
+	 * @param mixed $column The column being compared
+	 * @param mixed $value The value being compared to
+	 * @param string $comparison The comparison being done
+	 * @param string $comparison_type Whether it is an AND or an OR
+	 * @param boolean $escape whether or not this value will be escaped
+	 */
+	private function push_where($column, $value, $comparison, $comparison_type, $escape){
+		$comparison = strtoupper($comparison);
+		$comparison_type = strtoupper($comparison_type);
+		$old_column = $column;
+		$column = $this->filter_column($column);
+		$old_value = $value;
+		$value = $this->filter_column($value);
+		if($old_value !== $value){
+			$escape = false;
+		}
+		$this->wheres[] = array(
+			'column'=>$column,
+			'value'=>$value,
+			'comparison'=>$comparison,
+			'type'=>$comparison_type,
+			'escape'=>$escape,
+		);
+	}
+	/**
+	 * Clear the where stack
+	 */
+	private function clear_wheres(){
+		$this->wheres = array();
 	}
 	/**
 	 * Build the COLUMN string part of the query
@@ -213,6 +283,15 @@ class query{
 			$string = '*';
 		}
 		return $string;
+	}
+	/**
+	 * Push a closing bracket into the where stack to end the grouping of conditions
+	 * @return query
+	 */
+	private function closed_bracket(){
+		$this->wheres[] = array(
+			'bracket'=>'CLOSE',
+		);
 	}
 	/**
 	 * Build the TABLE string part of the query
