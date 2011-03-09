@@ -1,41 +1,63 @@
 <?php
 require_once 'db.mock.php';
 /**
- * @property-read array $tables The tables that are part of the query
- * @property-read array $columns The columns that are part of the query
- * @property-read array $wheres The where conditions that are part of the query
- * @property-read array $joins The join conditions that are part of the query
+ * @property-read array $tables The TABLEs that are part of the query
+ * @property-read array $columns The COLUMNs that are part of the query
+ * @property-read array $wheres The WHERE conditions that are part of the query
+ * @property-read array $joins The JOIN conditions that are part of the query
+ * @property-read array $havings The HAVING conditions that are part of the query
+ * @property-read array $group_bys The GROUP BY conditions that are part of the query
+ * @property-read array $order_bys The ORDER BY conditions that are part of the query
  */
 class query{
-	const QUOTE = "'";
 	/**
-	 * The tables that are part of the query
+	 * The TABLEs that are part of the query
 	 * @var array
 	 */
 	protected $tables = array();
 	/**
-	 *  The columns that are part of the query
+	 * The COLUMNs that are part of the query
 	 * @var array
 	 */
 	protected $columns = array();
 	/**
-	 * The where conditions that are part of the query
+	 * The WHERE conditions that are part of the query
 	 * @var array
 	 */
 	protected $wheres = array();
 	/**
-	 * The joins that are being used in this query
+	 * The JOIN conditions that are part of the query
 	 * @var array
 	 */
 	protected $joins = array();
+	/**
+	 * The HAVING conditions that are being used in this query
+	 * @var array
+	 */
+	protected $havings = array();
+	/**
+	 * The GROUP BY conditions that are part of the query
+	 * @var array
+	 */
+	protected $group_bys = array();
+	/**
+	 * The ORDER BY conditions that are part of the query
+	 * @var array
+	 */
+	protected $order_bys = array();
 	/**
 	 *
 	 * @var database_class
 	 */
 	private $db = null;
 	public function __construct(){
-		$this->db = new db_mock();
+		$this->db = new db();
 	}
+	/**
+	 * It is a get function, it returns things
+	 * @param string $var
+	 * @return mixed
+	 */
 	public function __get($var){
 		return $this->$var;
 	}
@@ -108,7 +130,7 @@ class query{
 	 * Add a join to the query
 	 * @param string $table
 	 * @param string $conditions
-	 * return query
+	 * @return query
 	 */
 	public function join($table, $conditions){
 		$this->push_join($table, $conditions, 'JOIN');
@@ -118,7 +140,7 @@ class query{
 	 * Add a right join to the query
 	 * @param string $table
 	 * @param string $conditions
-	 * return query
+	 * @return query
 	 */
 	public function right_join($table, $conditions){
 		$this->push_join($table, $conditions, 'RIGHT JOIN');
@@ -128,7 +150,7 @@ class query{
 	 * Add a left join to the query
 	 * @param string $table
 	 * @param string $conditions
-	 * return query
+	 * @return query
 	 */
 	public function left_join($table, $conditions){
 		$this->push_join($table, $conditions, 'LEFT JOIN');
@@ -138,7 +160,7 @@ class query{
 	 * Add a straight join to the query
 	 * @param string $table
 	 * @param string $conditions
-	 * return query
+	 * @return query
 	 */
 	public function straight_join($table, $conditions){
 		$this->push_join($table, $conditions, 'STRAIGHT JOIN');
@@ -148,7 +170,7 @@ class query{
 	 * Add an inner join to the query
 	 * @param string $table
 	 * @param string $conditions
-	 * return query
+	 * @return query
 	 */
 	public function inner_join($table, $conditions){
 		$this->push_join($table, $conditions, 'INNER JOIN');
@@ -158,7 +180,7 @@ class query{
 	 * Add a cross join to the query
 	 * @param string $table
 	 * @param string $conditions
-	 * return query
+	 * @return query
 	 */
 	public function cross_join($table, $conditions){
 		$this->push_join($table, $conditions, 'CROSS JOIN');
@@ -210,8 +232,120 @@ class query{
 		$select = 'SELECT '. $this->build_column_string()
 				.' FROM ' . $this->build_table_string()
 				. $this->build_join_string()
-				. $this->build_where_string();
+				. $this->build_where_string()
+				. $this->build_group_by_string()
+				. $this->build_order_by_string()
+				. $this->build_having_string();
 		return $select;
+	}
+	/**
+	 * Add a GROUP BY to the stack
+	 * @param string $filter The field to group by
+	 * @param string $order The order
+	 * @return query
+	 */
+	public function group_by($filter){
+		$this->group_bys[] = array(
+			'filter'=>$filter
+		);
+		return $this;
+	}
+	/**
+	 * Clear the GROUP BY stack
+	 * @return query
+	 */
+	public function clear_group_by(){
+		$this->group_bys = array();
+		return $this;
+	}
+	/**
+	 * Add an ORDER BY to the stack
+	 * @param string $column The column to order by
+	 * @param string $order The order to sort by
+	 * @return query
+	 */
+	public function order_by($column, $order = 'ASC'){
+		$this->order_bys[] = array(
+			'column'=>$column,
+			'order'=>$order,
+		);
+		return $this;
+	}
+	/**
+	 * Clear the ORDER BY stack
+	 * @return query
+	 */
+	public function clear_order_by(){
+		$this->order_bys = array();
+		return $this;
+	}
+	/**
+	 * Add a having to the having stack, clears out the having stack
+	 * @param mixed $column The column being compared
+	 * @param mixed $having The value being compared to
+	 * @param string $comparison The comparison being done
+	 * @param string $comparison_type Whether it is an and or an OR
+	 * @param boolean $escape whether or not this value will be escaped
+	 * @return query
+	 */
+	public function having($column, $having, $comparison='=', $comparison_type='AND', $escape=true){
+		$this->clear_havings();
+		$this->push_having($column, $having, $comparison, $comparison_type, $escape);
+		return $this;
+	}
+	/**
+	 * Add a having to the having stack
+	 * @param mixed $column The column being compared
+	 * @param mixed $having The value being compared to
+	 * @param string $comparison The comparison being done
+	 * @param boolean $escape whether or not this value will be escaped
+	 * @return query
+	 */
+	public function or_having($column, $having, $comparison='=', $escape=true){
+		$this->push_having($column, $having, $comparison, 'OR', $escape);
+		return $this;
+	}
+	/**
+	 * Add a having to the having stack
+	 * @param mixed $column The column being compared
+	 * @param mixed $having The value being compared to
+	 * @param string $comparison The comparison being done
+	 * @param boolean $escape whether or not this value will be escaped
+	 * @return query
+	 */
+	public function and_having($column, $having, $comparison='=', $escape=true){
+		$this->push_having($column, $having, $comparison, 'AND', $escape);
+		return $this;
+	}
+	/**
+	 * Add a having to the conditions, clears out the where stack
+	 * @param mixed $column The column being compared
+	 * @param mixed $having The value being compared to
+	 * @param string $comparison The comparison being done
+	 * @param string $comparison_type Whether it is an and or an OR
+	 * @param boolean $escape whether or not this value will be escaped
+	 * @return query
+	 */
+	public function clear_havings(){
+		$this->havings = array();
+		return $this;
+	}
+	/**
+	 * Add a having to the conditions, clears out the where stack
+	 * @param mixed $column The column being compared
+	 * @param mixed $having The value being compared to
+	 * @param string $comparison The comparison being done
+	 * @param string $comparison_type Whether it is an and or an OR
+	 * @param boolean $escape whether or not this value will be escaped
+	 */
+	private function push_having($column, $having, $comparison='=', $comparison_type='AND', $escape=true){
+		$this->havings[] = array(
+			'column'=>$column,
+			'having'=>$having,
+			'comparison'=>$comparison,
+			'comparison_type'=>$comparison_type,
+			'escape'=>$escape
+		);
 	}
 	/**
 	 * Push a join onto the join stack
@@ -269,9 +403,11 @@ class query{
 	}
 	/**
 	 * Clear the where stack
+	 * @return query
 	 */
-	private function clear_wheres(){
+	public function clear_wheres(){
 		$this->wheres = array();
+		return $this;
 	}
 	/**
 	 * Build the COLUMN string part of the query
@@ -348,7 +484,7 @@ class query{
 			} else {
 				$string .= $w['column'] . ' ' . $w['comparison']. ' ';
 				if($w['escape']){
-					$string .= self::QUOTE . $this->db->escape($w['value']) . self::QUOTE;
+					$string .= db::QUOTE . $this->db->escape($w['value']) . db::QUOTE;
 				} else {
 					$string .= $w['value'];
 				}
@@ -364,6 +500,53 @@ class query{
 		$string = '';
 		foreach($this->joins as $j){
 			$string .= ' ' . $j['type'] . ' ' . $j['table'] . ' ON (' . $j['conditions'] . ')';
+		}
+		return $string;
+	}
+	/**
+	 * Build the having part of the query
+	 * @return string
+	 */
+	private function build_having_string(){
+		$string = '';
+		if(!empty($this->havings)){
+			$tmp = array_shift($this->havings);
+			$string .= ' HAVING ' . $tmp['column'] . ' ' . $tmp['comparison'] . ' ' . db::QUOTE . $this->db->escape($tmp['having']) . db::QUOTE;
+		}
+		foreach($this->havings as $h){
+			$string .= ' '.$h['comparison_type'] . ' ' . $h['column'] . ' ' . $h['comparison'] . ' ' . db::QUOTE . $this->db->escape($h['having']) . db::QUOTE;
+		}
+		return $string;
+	}
+	/**
+	 * Build the GROUP BY part of the query
+	 * @return $string
+	 */
+	private function build_group_by_string(){
+		$string = '';
+		if(!empty($this->group_bys)){
+			$string .= ' GROUP BY ';
+			$tmp = array();
+			foreach($this->group_bys as $g){
+				$tmp[] = $g['filter'];
+			}
+			$string .= implode(', ', $tmp);
+		}
+		return $string;
+	}
+	/**
+	 * Build the ORDER BY part of the query
+	 * @return $string
+	 */
+	private function build_order_by_string(){
+		$string = '';
+		if(!empty($this->order_bys)){
+			$string .= ' ORDER BY ';
+			$tmp = array();
+			foreach($this->order_bys as $o){
+				$tmp[] = $o['column'] . ' ' . $o['order'];
+			}
+			$string .= implode(', ', $tmp);
 		}
 		return $string;
 	}

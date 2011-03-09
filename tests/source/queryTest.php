@@ -433,4 +433,133 @@ class queryTest extends PHPUnit_Framework_TestCase {
 		$expected = "SELECT table.column FROM table JOIN join_table ON (id) RIGHT JOIN right_table ON (id2) WHERE column != '1'";
 		$this->assertEquals($expected, $this->q->build_select());
 	}
+
+	public function testOneGroupBy(){
+		$this->q->table('table')
+				->group_by('test_1');
+		$expected = array('filter'=>'test_1');
+		$this->assertEquals($expected, $this->q->group_bys[0]);
+		$sql_expected = 'SELECT * FROM table GROUP BY test_1';
+		$this->assertEquals($sql_expected,$this->q->build_select());
+	}
+
+	public function testMultipleGroupBy(){
+		$this->q->table('table')
+				->group_by('test_1')
+				->group_by('test_2');
+		$expected = array(
+			array(
+				'filter'=>'test_1'
+			),
+			array(
+				'filter'=>'test_2'
+			),
+		);
+		$this->assertEquals($expected, $this->q->group_bys);
+		$sql_expected = 'SELECT * FROM table GROUP BY test_1, test_2';
+		$this->assertEquals($sql_expected,$this->q->build_select());
+	}
+
+	public function testClearGroupBy(){
+		$this->q->table('table')
+				->group_by('test_1')
+				->group_by('test_2')
+				->clear_group_by();
+		$expected = array();
+		$this->assertEquals($expected, $this->q->group_bys);
+		$sql_expected = 'SELECT * FROM table';
+		$this->assertEquals($sql_expected,$this->q->build_select());
+	}
+
+	public function testOneOrderBy(){
+		$this->q->table('table')
+				->order_by('test_1');
+		$expected = array(
+			'column'=>'test_1',
+			'order'=>'ASC'
+		);
+		$this->assertEquals($expected, $this->q->order_bys[0]);
+		$sql_expected = 'SELECT * FROM table ORDER BY test_1 ASC';
+		$this->assertEquals($sql_expected,$this->q->build_select());
+	}
+
+	public function testMultipleOrderBy(){
+		$this->q->table('table')
+				->order_by('test_1')
+				->order_by('test_2', 'DESC');
+		$expected = array(
+			array(
+				'column'=>'test_1',
+				'order'=>'ASC'
+			),
+			array(
+				'column'=>'test_2',
+				'order'=>'DESC'
+			),
+		);
+		$this->assertEquals($expected, $this->q->order_bys);
+		$sql_expected = 'SELECT * FROM table ORDER BY test_1 ASC, test_2 DESC';
+		$this->assertEquals($sql_expected,$this->q->build_select());
+	}
+
+	public function testClearOrderBy(){
+		$this->q->table('table')
+				->order_by('test_1')
+				->order_by('test_2', 'DESC')
+				->clear_order_by();
+		$expected = array();
+		$this->assertEquals($expected, $this->q->order_bys);
+		$sql_expected = 'SELECT * FROM table';
+		$this->assertEquals($sql_expected,$this->q->build_select());
+	}
+
+	public function testOneHaving(){
+		$this->q->table('table')
+				->having('test_1', 'test_2');
+		$expected = array(
+			'column'=>'test_1',
+			'having'=>'test_2',
+			'comparison'=>'=',
+			'comparison_type'=>'AND',
+			'escape'=>TRUE
+		);
+		$this->assertEquals($expected, $this->q->havings[0]);
+
+		$sql_expected = "SELECT * FROM table HAVING test_1 = 'test_2'";
+		$this->assertEquals($sql_expected,$this->q->build_select());
+	}
+
+	public function testMultipleHaving(){
+		$this->q->table('table')
+				->having('test_1', 'test_2')
+				->and_having('test_3', 'test_4', '<>')
+				->or_having('test_5', 'test_6', 'IS NOT');
+		$expected = array(
+			array(
+				'column'=>'test_1',
+				'having'=>'test_2',
+				'comparison'=>'=',
+				'comparison_type'=>'AND',
+				'escape'=>TRUE
+			),
+			array(
+				'column'=>'test_3',
+				'having'=>'test_4',
+				'comparison'=>'<>',
+				'comparison_type'=>'AND',
+				'escape'=>TRUE
+			),
+			array(
+				'column'=>'test_5',
+				'having'=>'test_6',
+				'comparison'=>'IS NOT',
+				'comparison_type'=>'OR',
+				'escape'=>TRUE
+			),
+		);
+		$this->assertEquals($expected, $this->q->havings);
+
+		$sql_expected = "SELECT * FROM table HAVING test_1 = 'test_2' AND test_3 <> 'test_4' OR test_5 IS NOT 'test_6'";
+		$this->assertEquals($sql_expected,$this->q->build_select());
+	}
 }
