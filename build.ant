@@ -1,0 +1,75 @@
+<?xml  version="1.0" encoding="utf-8" ?>
+<project name="query-builder" default="qa">
+
+<!--This target runs the phpunit from-->
+    <target name="phpunit">
+        <!--unix-->
+        <exec dir="${basedir}"
+       executable="phpunit"
+       failonerror="true" osfamily="unix">
+            <arg line="--testdox --configuration ${basedir}/phpunit.xml"/>
+        </exec>
+
+        <!--windows... seriously... why?-->
+        <exec dir="${basedir}"
+       executable="cmd"
+       failonerror="true" osfamily="windows">
+            <arg line="/c phpunit.bat --testdox --configuration ${basedir}/phpunit.xml"/>
+        </exec>
+    </target>
+
+<!--This target runs the phpcs-->
+    <target name="phpcs">
+        <!--unix-->
+        <exec dir="${basedir}"
+    executable="phpcs"
+    failonerror="true" osfamily="unix">
+            <arg line="--standard=Cake --extensions=php ${basedir}/source"/>
+        </exec>
+
+        <!--windows-->
+        <exec dir="${basedir}"
+    executable="cmd"
+    failonerror="true" osfamily="windows">
+            <arg line="/c phpcs.bat --standard=Cake --extensions=php ${basedir}/source"/>
+        </exec>
+    </target>
+
+<!--This target runs phpmd. The failonerror attrib is yet inefficient, but
+a small patch can fix the PHPMD's exit levels-->
+    <target name="phpmd">
+        <!--unix-->
+        <exec dir="${basedir}/source"
+       executable="phpmd"
+       failonerror="true" osfamily="unix">
+            <arg line=". text codesize,naming,unusedcode"/>
+        </exec>
+
+        <!--windows-->
+        <exec dir="${basedir}/source"
+       executable="cmd"
+       failonerror="true" osfamily="windows">
+            <arg line="/c phpmd . text codesize,naming,unusedcode"/>
+        </exec>
+    </target>
+
+<!--This target runs phpcpd. The failonerror attrib is inefficient. The
+exit levels will be fixed in v phpcpd v. 0.2.5-->
+    <target name="phpcpd">
+        <!--unix-->
+        <exec
+          executable="phpcpd"
+           failonerror="true" osfamily="unix">
+            <arg line="--min-tokens 10 ${basedir}/source"/>
+        </exec>
+
+        <!--windows-->
+        <exec
+          executable="cmd"
+           failonerror="true" osfamily="windows">
+            <arg line="/c phpcpd --min-tokens 10 ${basedir}/source"/>
+        </exec>
+    </target>
+
+    <target name="qa" depends="phpmd, phpcpd, phpunit, phpcs"/>
+</project>

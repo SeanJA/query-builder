@@ -1,6 +1,10 @@
 <?php
-require_once 'db.mock.php';
 /**
+ * A query builder class
+ * 
+ * @author SeanJA <code@seanja.com>
+ * @license MIT / GPLv2
+ * @link http://github.com/SeanJA/query-builder
  * @property-read array $tables The TABLEs that are part of the query
  * @property-read array $columns The COLUMNs that are part of the query
  * @property-read array $wheres The WHERE conditions that are part of the query
@@ -400,7 +404,6 @@ class query{
 	private function push_where($column, $value, $comparison, $comparison_type, $escape){
 		$comparison = strtoupper($comparison);
 		$comparison_type = strtoupper($comparison_type);
-		$old_column = $column;
 		$column = $this->filter_column($column);
 		$old_value = $value;
 		$value = $this->filter_column($value);

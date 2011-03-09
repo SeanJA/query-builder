@@ -1,0 +1,14 @@
+<?xml  version="1.0" encoding="utf-8" ?>
+<phpunit
+  colors="true"
+  syntaxCheck="true"
+  convertErrorsToExceptions="true"
+  convertNoticesToExceptions="true"
+  convertWarningsToExceptions="true"
+  stopOnFailure="false"
+  >
+    <testsuite name="unittests">
+            <directory suffix="Test.php">tests</directory>
+    </testsuite>
+
+</phpunit>
