@@ -562,4 +562,28 @@ class queryTest extends PHPUnit_Framework_TestCase {
 		$sql_expected = "SELECT * FROM table HAVING test_1 = 'test_2' AND test_3 <> 'test_4' OR test_5 IS NOT 'test_6'";
 		$this->assertEquals($sql_expected,$this->q->build_select());
 	}
+
+	public function testLimit(){
+		$this->q->table('table')
+				->set_limit(1);
+		$expected = 1;
+		$this->assertEquals($expected, $this->q->limit);
+
+		$this->q->set_limit(2);
+		$expected = 2;
+		$this->assertEquals($expected, $this->q->limit);
+
+		$this->q->set_limit('2.4');
+		$expected = null;
+		$this->assertEquals($expected, $this->q->limit);
+
+		$this->q->clear_limit();
+		$expected = null;
+		$this->assertEquals($expected, $this->q->limit);
+
+		$this->q->set_limit(40);
+
+		$sql_expected = "SELECT * FROM table LIMIT 40";
+		$this->assertEquals($sql_expected,$this->q->build_select());
+	}
 }

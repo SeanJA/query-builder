@@ -8,6 +8,7 @@ require_once 'db.mock.php';
  * @property-read array $havings The HAVING conditions that are part of the query
  * @property-read array $group_bys The GROUP BY conditions that are part of the query
  * @property-read array $order_bys The ORDER BY conditions that are part of the query
+ * @property-read int $limit The LIMIT condition that is part of the query
  */
 class query{
 	/**
@@ -45,6 +46,11 @@ class query{
 	 * @var array
 	 */
 	protected $order_bys = array();
+	/**
+	 * The LIMIT condition that is part of the query
+	 * @var int
+	 */
+	protected $limit = null;
 	/**
 	 *
 	 * @var database_class
@@ -235,7 +241,8 @@ class query{
 				. $this->build_where_string()
 				. $this->build_group_by_string()
 				. $this->build_order_by_string()
-				. $this->build_having_string();
+				. $this->build_having_string()
+				. $this->build_limit_string();
 		return $select;
 	}
 	/**
@@ -410,6 +417,28 @@ class query{
 		return $this;
 	}
 	/**
+	 * Set the LIMIT for the query
+	 * @param int $limit
+	 * @return query
+	 */
+	public function set_limit($limit){
+		$new_limit = (int)$limit;
+		if($new_limit == $limit){
+			$this->limit = $new_limit;
+		} else {
+			$this->clear_limit();
+		}
+		return $this;
+	}
+	/**
+	 * Clear the LIMIT on the query
+	 * @return query
+	 */
+	public function clear_limit(){
+		$this->limit = null;
+		return $this;
+	}
+	/**
 	 * Build the COLUMN string part of the query
 	 * @return string
 	 */
@@ -547,6 +576,13 @@ class query{
 				$tmp[] = $o['column'] . ' ' . $o['order'];
 			}
 			$string .= implode(', ', $tmp);
+		}
+		return $string;
+	}
+	private function build_limit_string(){
+		$string = '';
+		if($this->limit){
+			$string .= ' LIMIT ' . $this->limit;
 		}
 		return $string;
 	}
