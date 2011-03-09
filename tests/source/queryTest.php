@@ -586,4 +586,28 @@ class queryTest extends PHPUnit_Framework_TestCase {
 		$sql_expected = "SELECT * FROM table LIMIT 40";
 		$this->assertEquals($sql_expected,$this->q->build_select());
 	}
+
+	public function testOffset(){
+		$this->q->table('table')
+				->set_offset(1);
+		$expected = 1;
+		$this->assertEquals($expected, $this->q->offset);
+
+		$this->q->set_offset(2);
+		$expected = 2;
+		$this->assertEquals($expected, $this->q->offset);
+
+		$this->q->set_offset('2.4');
+		$expected = null;
+		$this->assertEquals($expected, $this->q->offset);
+
+		$this->q->clear_offset();
+		$expected = null;
+		$this->assertEquals($expected, $this->q->offset);
+
+		$this->q->set_offset(40);
+
+		$sql_expected = "SELECT * FROM table OFFSET 40";
+		$this->assertEquals($sql_expected,$this->q->build_select());
+	}
 }

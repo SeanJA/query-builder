@@ -9,6 +9,7 @@ require_once 'db.mock.php';
  * @property-read array $group_bys The GROUP BY conditions that are part of the query
  * @property-read array $order_bys The ORDER BY conditions that are part of the query
  * @property-read int $limit The LIMIT condition that is part of the query
+ * @property-read int $offset The OFFSET condition that is part of the query
  */
 class query{
 	/**
@@ -51,6 +52,11 @@ class query{
 	 * @var int
 	 */
 	protected $limit = null;
+	/**
+	 * The OFFSET condition that is part of the query
+	 * @var int
+	 */
+	protected $offset = null;
 	/**
 	 *
 	 * @var database_class
@@ -242,7 +248,8 @@ class query{
 				. $this->build_group_by_string()
 				. $this->build_order_by_string()
 				. $this->build_having_string()
-				. $this->build_limit_string();
+				. $this->build_limit_string()
+				. $this->build_offset_string();
 		return $select;
 	}
 	/**
@@ -439,6 +446,28 @@ class query{
 		return $this;
 	}
 	/**
+	 * Set the LIMIT for the query
+	 * @param int $offset
+	 * @return query
+	 */
+	public function set_offset($offset){
+		$new_offset = (int)$offset;
+		if($new_offset == $offset){
+			$this->offset = $new_offset;
+		} else {
+			$this->clear_offset();
+		}
+		return $this;
+	}
+	/**
+	 * Clear the LIMIT on the query
+	 * @return query
+	 */
+	public function clear_offset(){
+		$this->offset = null;
+		return $this;
+	}
+	/**
 	 * Build the COLUMN string part of the query
 	 * @return string
 	 */
@@ -579,10 +608,25 @@ class query{
 		}
 		return $string;
 	}
+	/**
+	 * Build the LIMIT part of the query
+	 * @return string
+	 */
 	private function build_limit_string(){
 		$string = '';
 		if($this->limit){
 			$string .= ' LIMIT ' . $this->limit;
+		}
+		return $string;
+	}
+	/**
+	 * Build the OFFSET part of the query
+	 * @return string
+	 */
+	private function build_offset_string(){
+		$string = '';
+		if($this->offset){
+			$string .= ' OFFSET ' . $this->offset;
 		}
 		return $string;
 	}
