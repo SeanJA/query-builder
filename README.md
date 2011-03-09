@@ -5,15 +5,15 @@ Requirements
 * ant for the build script
 
 * phpcpd
-  * http://pear.phpunit.de/
+  * [http://pear.phpunit.de/](http://pear.phpunit.de/)
 * phpcs
-  * http://pear.php.net/package/PHP_CodeSniffer/
+  * [http://pear.php.net/package/PHP_CodeSniffer/](http://pear.php.net/package/PHP_CodeSniffer/)
   * Using the Cake standard for now... needs to be changed, as Cake expects camelCase, and I hate that...
-    * https://github.com/AD7six/cakephp-codesniffs
+    * [https://github.com/AD7six/cakephp-codesniffs](https://github.com/AD7six/cakephp-codesniffs)
 * phpmd
-  * http://phpmd.org/
+  * [http://phpmd.org/](http://phpmd.org/)
 * phpunit
-  * http://pear.phpunit.de/
+  * [http://pear.phpunit.de/](http://pear.phpunit.de/)
 
 TODO
 ==
