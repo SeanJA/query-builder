@@ -12,15 +12,71 @@
  * @property-read array $havings The HAVING conditions that are part of the query
  * @property-read array $group_bys The GROUP BY conditions that are part of the query
  * @property-read array $order_bys The ORDER BY conditions that are part of the query
+ * @property-read array $delete_froms The TABLES that will be deleted from in the query
  * @property-read int $limit The LIMIT condition that is part of the query
  * @property-read int $offset The OFFSET condition that is part of the query
  */
 class query{
 	/**
+	 * Less than operator
+	 * @var string
+	 */
+	const LESS_THAN = '<';
+	/**
+	 * Less or equals than operator
+	 * @var string
+	 */
+	const LESS_THAN_OR_EQUALS = '<=';
+	/**
+	 * Greater than operator
+	 * @var string
+	 */
+	const GREATER_THAN = '>';
+	/**
+	 * Less than or equals operator
+	 * @var string
+	 */
+	const GREATER_THAN_OR_EQUALS = '>=';
+	/**
+	 * IS operator
+	 * @var string
+	 */
+	const IS = 'IS';
+	/**
+	 * IS NOT operator
+	 * @var string
+	 */
+	const IS_NOT = 'IS NOT';
+	/**
+	 * Equals operator
+	 * @var string
+	 */
+	const EQUAL = '=';
+	/**
+	 * Not equal operator
+	 * @var string
+	 */
+	const NOT_EQUAL = '!=';
+	/**
+	 * Like operator
+	 * @var string
+	 */
+	const LIKE = 'LIKE';
+	/**
+	 * Not Like operator
+	 * @var string
+	 */
+	const NOT_LIKE = 'NOT LIKE';
+	/**
 	 * The TABLEs that are part of the query
 	 * @var array
 	 */
 	protected $tables = array();
+	/**
+	 * The TABLEs that will be deleted from (if any are in this array)
+	 * @var array
+	 */
+	protected $delete_froms = array();
 	/**
 	 * The COLUMNs that are part of the query
 	 * @var array
@@ -241,17 +297,30 @@ class query{
 		return $this;
 	}
 	/**
-	 * Build a select string from the current query
+	 * Build a SELECT string for the current query
 	 * @return string
 	 */
 	public function build_select(){
-		$select = 'SELECT '. $this->build_column_string()
+		$delete = 'SELECT '. $this->build_column_string()
 				.' FROM ' . $this->build_table_string()
 				. $this->build_join_string()
 				. $this->build_where_string()
 				. $this->build_group_by_string()
 				. $this->build_order_by_string()
 				. $this->build_having_string()
+				. $this->build_limit_string()
+				. $this->build_offset_string();
+		return $delete;
+	}
+	/**
+	 * Build a DELETE string from the current query
+	 * @return string
+	 */
+	public function build_delete(){
+		$select = 'DELETE '. $this->build_delete_from_string()
+				. 'FROM ' . $this->build_table_string()
+				. $this->build_join_string()
+				. $this->build_where_string()
 				. $this->build_limit_string()
 				. $this->build_offset_string();
 		return $select;
@@ -357,13 +426,13 @@ class query{
 	 * @param boolean $escape whether or not this value will be escaped
 	 */
 	private function push_having($column, $having, $comparison='=', $comparison_type='AND', $escape=true){
-		$this->havings[] = array(
+		array_push($this->havings, array(
 			'column'=>$column,
 			'having'=>$having,
 			'comparison'=>$comparison,
 			'comparison_type'=>$comparison_type,
 			'escape'=>$escape
-		);
+		));
 	}
 	/**
 	 * Push a join onto the join stack
@@ -372,11 +441,11 @@ class query{
 	 * @param string $type
 	 */
 	private function push_join($table, $conditions, $type){
-		$this->joins[] = array(
+		array_push($this->joins, array(
 			'table'=>$table,
 			'conditions'=>$conditions,
 			'type'=>$type,
-		);
+		));
 	}
 	/**
 	 * Handle some special column value cases
@@ -410,13 +479,13 @@ class query{
 		if($old_value !== $value){
 			$escape = false;
 		}
-		$this->wheres[] = array(
+		array_push($this->wheres, array(
 			'column'=>$column,
 			'value'=>$value,
 			'comparison'=>$comparison,
 			'type'=>$comparison_type,
 			'escape'=>$escape,
-		);
+		));
 	}
 	/**
 	 * Clear the where stack
@@ -468,6 +537,15 @@ class query{
 	 */
 	public function clear_offset(){
 		$this->offset = null;
+		return $this;
+	}
+	/**
+	 * Add a TABLE to the list of TABLEs to delete from
+	 * @param type string
+	 * @return query
+	 */
+	function delete_from($delete_from){
+		$this->delete_froms[] = $this->db->escape($delete_from);
 		return $this;
 	}
 	/**
@@ -524,6 +602,7 @@ class query{
 	private function build_where_string(){
 		$first = true;
 		$bracket = false;
+		$string = '';
 		foreach($this->wheres as $w){
 			if($first){
 				$string = ' WHERE ';
@@ -633,4 +712,16 @@ class query{
 		}
 		return $string;
 	}
+	/**
+	 * List the tables to delete from
+	 * @return string
+	 */
+	private function build_delete_from_string(){
+		$string = '';
+		if($this->delete_froms){
+			$string .= implode(',',$this->delete_froms).' ';
+		}
+		return $string;
+	}
+	
 }

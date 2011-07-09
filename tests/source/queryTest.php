@@ -610,4 +610,34 @@ class queryTest extends PHPUnit_Framework_TestCase {
 		$sql_expected = "SELECT * FROM table OFFSET 40";
 		$this->assertEquals($sql_expected,$this->q->build_select());
 	}
+	
+	public function testDelete(){
+		$expected = "DELETE FROM test WHERE t1 = 'foo' AND t2 = 'foo_2'";
+		$this->q->table('test')
+				->where('t1', 'foo')
+				->and_where('t2', 'foo_2');
+		$this->assertEquals($expected, $this->q->build_delete());
+	}
+	
+	public function testDeleteDuplicateEntries(){
+		//http://dev.mysql.com/doc/refman/5.0/en/delete.html#c5206 (deleting duplicate entries example)
+		$expected = 'DELETE t1 FROM tbl_name AS t1, tbl_name AS t2 WHERE t1.userID = t2.userID AND t1.eventID = t2.eventID AND t1.ueventID < t2.ueventID';
+		$this->q->delete_from('t1')
+				->table('tbl_name', 't1')
+				->table('tbl_name', 't2')
+				->where('t1.userID', 't2.userID', query::EQUAL, false)
+				->and_where('t1.eventID', 't2.eventID', query::EQUAL, false)
+				->and_where('t1.ueventID', 't2.ueventID',query::LESS_THAN, false);
+		$this->assertEquals($expected, $this->q->build_delete());
+	}
+	
+	public function testDeleteSelect(){
+		$expected_delete = "DELETE FROM test WHERE t1 = 'foo' AND t2 = 'foo_2'";
+		$expected_select = "SELECT * FROM test WHERE t1 = 'foo' AND t2 = 'foo_2'";
+		$this->q->table('test')
+				->where('t1', 'foo')
+				->and_where('t2', 'foo_2');
+		$this->assertEquals($expected_delete, $this->q->build_delete());
+		$this->assertEquals($expected_select, $this->q->build_select());
+	}
 }
