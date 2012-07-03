@@ -118,12 +118,16 @@ class query{
 	 */
 	protected $offset = null;
 	/**
-	 *
-	 * @var database_class
+	 * The database object
+	 * @var db
 	 */
 	private $db = null;
-	public function __construct(){
-		$this->db = new db();
+	/**
+	 * 
+	 * @param db database class
+	 */
+	public function __construct(&$db){
+		$this->db = $db;
 	}
 	/**
 	 * It is a get function, it returns things
