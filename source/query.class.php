@@ -264,22 +264,26 @@ class query{
 	}
 	/**
 	 * Push an open bracket into the where stack to group OR conditions
+	 * @param bool $add_type_before
 	 * @return query
 	 */
-	public function begin_or(){
+	public function begin_or($add_type_before = true){
 		$this->wheres[] = array(
 			'bracket'=>'OPEN',
+			'add_type_before'=>$add_type_before,
 			'type'=>'OR'
 		);
 		return $this;
 	}
 	/**
 	 * Push an open bracket into the where stack to group AND conditions
+	 * @param bool $add_type_before
 	 * @return query
 	 */
-	public function begin_and(){
+	public function begin_and($add_type_before = true){
 		$this->wheres[] = array(
 			'bracket'=>'OPEN',
+			'add_type_before'=>$add_type_before,
 			'type'=>'AND'
 		);
 		return $this;
@@ -620,7 +624,10 @@ class query{
 			}
 			if(isset($w['bracket'])){
 				if($w['bracket'] === 'OPEN'){
-					$string .= '( ';
+					if($w['add_type_before'] && !$first){
+						$string .= ' ' . $w['type'] . ' ';
+					}
+					$string .= ' ( ';
 					$bracket = true;
 				} else {
 					$string .= ' )';
