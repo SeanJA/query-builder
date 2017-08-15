@@ -10,5 +10,15 @@
     <testsuite name="unittests">
             <directory suffix="Test.php">tests</directory>
     </testsuite>
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">./source</directory>
+            <file>/path/to/file</file>
+            <!--<exclude>-->
+                <!--<directory suffix=".php">./source</directory>-->
+                <!--<file>/path/to/file</file>-->
+            <!--</exclude>-->
+        </whitelist>
+    </filter>
 
 </phpunit>
