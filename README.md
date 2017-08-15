@@ -4,7 +4,7 @@
 Requirements
 ==
 
-* PHP 5.5 +
+* PHP 5.3 +
 
 TODO
 ==
@@ -21,19 +21,19 @@ Examples
 
     $q->table('table')
     ->begin_and()
-    ->and_where('col_1', 1)
-    ->or_where('col_2', 2)
-    ->end_and()
-    ->or_where('col_3', 3, '!=');
+    ->andWhere('col_1', 1)
+    ->orWhere('col_2', 2)
+    ->endAnd()
+    ->orWhere('col_3', 3, '!=');
     //=>SELECT * FROM table WHERE ( col_1 = '1'  OR col_2 = '2' ) or col_3 != '3'
 
     $q->table('table')
-    ->begin_and()
-    ->begin_and()
-    ->and_where('col_1', 1)
-    ->or_where('col_2', 2)
-    ->end_and()
-    ->end_and()
-    ->or_where('col_3', 3, '!=');
+    ->beginAnd()
+    ->beginAnd()
+    ->andWhere('col_1', 1)
+    ->orWhere('col_2', 2)
+    ->endAnd()
+    ->endAnd()
+    ->orWhere('col_3', 3, '!=');
 
     //=>SELECT * FROM table WHERE ( ( col_1 = '1' OR col_2 = '2' ) ) OR col_3 != '3'
