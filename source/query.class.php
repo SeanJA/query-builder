@@ -16,7 +16,7 @@
  * @property-read int $limit The LIMIT condition that is part of the query
  * @property-read int $offset The OFFSET condition that is part of the query
  */
-class query{
+class queryBuilder{
 	/**
 	 * Less than operator
 	 * @var string
@@ -124,9 +124,9 @@ class query{
 	private $db = null;
 	/**
 	 * 
-	 * @param db database class
+	 * @param queryBuilderDbInterface database class
 	 */
-	public function __construct(&$db){
+	public function __construct($db){
 		$this->db = $db;
 	}
 	/**
@@ -264,22 +264,26 @@ class query{
 	}
 	/**
 	 * Push an open bracket into the where stack to group OR conditions
+	 * @param bool $add_type_before
 	 * @return query
 	 */
-	public function begin_or(){
+	public function begin_or($add_type_before = true){
 		$this->wheres[] = array(
 			'bracket'=>'OPEN',
+			'add_type_before'=>$add_type_before,
 			'type'=>'OR'
 		);
 		return $this;
 	}
 	/**
 	 * Push an open bracket into the where stack to group AND conditions
+	 * @param bool $add_type_before
 	 * @return query
 	 */
-	public function begin_and(){
+	public function begin_and($add_type_before = true){
 		$this->wheres[] = array(
 			'bracket'=>'OPEN',
+			'add_type_before'=>$add_type_before,
 			'type'=>'AND'
 		);
 		return $this;
@@ -610,7 +614,6 @@ class query{
 		foreach($this->wheres as $w){
 			if($first){
 				$string = ' WHERE ';
-				$first = false;
 			} else {
 				if(!$bracket && !isset($w['bracket'])){
 					$string .= ' ' . $w['type'] . ' ';
@@ -620,6 +623,9 @@ class query{
 			}
 			if(isset($w['bracket'])){
 				if($w['bracket'] === 'OPEN'){
+					if($w['add_type_before'] && !$first){
+						$string .= ' ' . $w['type'] . ' ';
+					}
 					$string .= '( ';
 					$bracket = true;
 				} else {
@@ -628,11 +634,12 @@ class query{
 			} else {
 				$string .= $w['column'] . ' ' . $w['comparison']. ' ';
 				if($w['escape']){
-					$string .= db::QUOTE . $this->db->escape($w['value']) . db::QUOTE;
+					$string .= $this->db->quote() . $this->db->escape($w['value']) . $this->db->quote();
 				} else {
 					$string .= $w['value'];
 				}
 			}
+			$first = false;
 		}
 		return $string;
 	}
@@ -655,10 +662,10 @@ class query{
 		$string = '';
 		if(!empty($this->havings)){
 			$tmp = array_shift($this->havings);
-			$string .= ' HAVING ' . $tmp['column'] . ' ' . $tmp['comparison'] . ' ' . db::QUOTE . $this->db->escape($tmp['having']) . db::QUOTE;
+			$string .= ' HAVING ' . $tmp['column'] . ' ' . $tmp['comparison'] . ' ' . $this->db->quote() . $this->db->escape($tmp['having']) . $this->db->quote();
 		}
 		foreach($this->havings as $h){
-			$string .= ' '.$h['comparison_type'] . ' ' . $h['column'] . ' ' . $h['comparison'] . ' ' . db::QUOTE . $this->db->escape($h['having']) . db::QUOTE;
+			$string .= ' '.$h['comparison_type'] . ' ' . $h['column'] . ' ' . $h['comparison'] . ' ' . $this->db->quote() . $this->db->escape($h['having']) . $this->db->quote();
 		}
 		return $string;
 	}

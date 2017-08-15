@@ -38,7 +38,7 @@ Examples
 
     $q->table('table')
     ->begin_and()
-    ->begin_and()
+    ->begin_and(false)      // false so we don't add and before opening bracket
     ->and_where('col_1', 1)
     ->or_where('col_2', 2)
     ->end_and()
