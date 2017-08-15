@@ -43,9 +43,9 @@
             "php vendor/bin/phpunit --coverage-clover clover.xml"
         ],
         "build": [
-            "vendor/bin/phpunit --configuration phpunit.xml",
-            "vendor/bin/phpcpd --min-tokens 10 source",
-            "vendor/bin/phpcs --standard=PSR2 --extensions=php source",
+            "vendor/bin/phpunit --configuration ./phpunit.xml",
+            "vendor/bin/phpcpd --min-tokens 10 ./source",
+            "vendor/bin/phpcs --standard=PSR2 --extensions=php ./source",
             "vendor/bin/phpunit --coverage-text"
         ]
     }
