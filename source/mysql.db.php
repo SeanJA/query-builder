@@ -1,11 +1,11 @@
 <?php
-require_once dirname(__FILE__) . '/../../source/db.interface.php';
+require_once dirname(__FILE__) . '/db.interface.php';
 
-class mockQueryBuilderDb implements queryBuilderDbInterface{
+class mysqlQueryBuilderDb implements queryBuilderDbInterface{
 
 	/** {@inheritDoc} */
 	public function escape($value){
-		return $value;
+		return mysql_real_escape_string($value);
 	}
 
 	/** {@inheritDoc} */

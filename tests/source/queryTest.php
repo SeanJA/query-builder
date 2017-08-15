@@ -1,6 +1,5 @@
 <?php
 
-require_once 'PHPUnit/Framework.php';
 require_once dirname(__FILE__) . '/db.mock.php';
 require_once dirname(__FILE__) . '/../../source/query.class.php';
 
@@ -20,8 +19,8 @@ class queryTest extends PHPUnit_Framework_TestCase {
 	 * This method is called before a test is executed.
 	 */
 	protected function setUp() {
-		$db = new db();
-		$this->q = new query($db);
+		$db = new mockQueryBuilderDb();
+		$this->q = new queryBuilder($db);
 	}
 
 	/**
@@ -231,7 +230,8 @@ class queryTest extends PHPUnit_Framework_TestCase {
 			),
 			array(
 				'bracket'=>'OPEN',
-				'type'=>'AND'
+				'type'=>'AND',
+				'add_type_before' => true
 			),
 			array(
 				'column'=>'TRUE',
@@ -242,7 +242,8 @@ class queryTest extends PHPUnit_Framework_TestCase {
 			),
 			array(
 				'bracket'=>'OPEN',
-				'type'=>'OR'
+				'type'=>'OR',
+				'add_type_before' => true
 			),
 			array(
 				'column'=>'NULL',
@@ -321,7 +322,7 @@ class queryTest extends PHPUnit_Framework_TestCase {
 	public function testMultiWhereGrouping(){
 		$this->q->table('table')
 				->begin_and()
-				->begin_and()
+				->begin_and(false)
 				->and_where('col_1', 1)
 				->or_where('col_2', 2)
 				->end_and()
@@ -626,9 +627,9 @@ class queryTest extends PHPUnit_Framework_TestCase {
 		$this->q->delete_from('t1')
 				->table('tbl_name', 't1')
 				->table('tbl_name', 't2')
-				->where('t1.userID', 't2.userID', query::EQUAL, false)
-				->and_where('t1.eventID', 't2.eventID', query::EQUAL, false)
-				->and_where('t1.ueventID', 't2.ueventID',query::LESS_THAN, false);
+				->where('t1.userID', 't2.userID', queryBuilder::EQUAL, false)
+				->and_where('t1.eventID', 't2.eventID', queryBuilder::EQUAL, false)
+				->and_where('t1.ueventID', 't2.ueventID',queryBuilder::LESS_THAN, false);
 		$this->assertEquals($expected, $this->q->build_delete());
 	}
 	
