@@ -4,21 +4,31 @@ namespace Tests\SeanJA;
 
 use SeanJA\DbInterface;
 
+/**
+ * Class Db
+ * @package Tests\SeanJA
+ */
 class Db implements DbInterface
 {
     /**
+     * Wrap string in this
+     *
      * @var string
      */
     const QUOTE = "'";
     /**
+     * Wrap fields in this
+     *
      * @var string
      */
     const FIELD_QUOTE = "`";
 
     /**
      * Escape a value
-     * @param $value
-     * @return mixed
+     *
+     * @param string $value The value to be escaped
+     *
+     * @return string
      */
     function escape($value)
     {
@@ -27,8 +37,10 @@ class Db implements DbInterface
 
     /**
      * Quote a string
-     * @param $value
-     * @return mixed
+     *
+     * @param string $value The value to be quoted
+     *
+     * @return string
      */
     public function quote($value)
     {
@@ -37,11 +49,13 @@ class Db implements DbInterface
 
     /**
      * Quote a field
-     * @param $value
-     * @return mixed
+     *
+     * @param string $field The field to be quoted
+     *
+     * @return string
      */
-    public function fieldQuote($value)
+    public function fieldQuote($field)
     {
-        return static::FIELD_QUOTE . $value . static::FIELD_QUOTE;
+        return static::FIELD_QUOTE . $field . static::FIELD_QUOTE;
     }
 }

@@ -1,14 +1,15 @@
 [![Build Status](https://travis-ci.org/SeanJA/query-builder.svg?branch=master)](https://travis-ci.org/SeanJA/query-builder)
+[![Code coverage](https://codecov.io/gh/SeanJA/query-builder/branch/master/graph/badge.svg)](https://codecov.io/gh/SeanJA/query-builder)
 
 Requirements
 ==
 
-* PHP 5.2 +
+* PHP 5.5 +
 
 TODO
 ==
 
-List some todos...
+* PHP 5.2 branch
 
 Examples
 ==
